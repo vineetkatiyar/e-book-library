@@ -1,6 +1,7 @@
+import mongoose, { Document } from "mongoose";
 import { User } from "../user/user.types";
 
-export interface BookType {
+export interface BookType extends Document {
     _id : string;
     title: string;
     description?: string;
@@ -8,6 +9,8 @@ export interface BookType {
     genre : string;
     coverImageUrl : string;
     file : string;
-    createAt : Date;
+    createdAt : Date;
     updatedAt : Date;
 }
+
+export interface BookPaginateModel extends mongoose.Model<BookType> {}

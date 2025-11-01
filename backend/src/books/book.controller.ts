@@ -1,9 +1,17 @@
 import { NextFunction, Request, Response } from "express";
-import path from "node:path";
+import path, { parse } from "node:path";
 import cloudinary from "../config/cloudinary";
 import fs from "fs/promises";
 import createHttpError from "http-errors";
 import book from "./book.model";
+
+
+interface GetAllBooksQuery {
+  page ?: string;
+  limit ?: string;
+  genre ? :string;
+  search ? :string;
+}
 
 const bookController = {
   async createBook(req: Request, res: Response, next: NextFunction) {
@@ -139,6 +147,85 @@ const bookController = {
       return next(createHttpError(500, "Failed to update book"));
     }
   },
+
+  async getBookById(req: Request, res: Response, next: NextFunction) {
+    try {
+
+      const bookId = req.params.id;
+      const existingBook = await book.findById(bookId).populate('author', 'name email');
+      if (!existingBook) {
+        return next(createHttpError(404, "Book not found"));
+      }
+
+      res.status(200).json({
+        message: "Book fetched successfully",
+        book: existingBook,
+      });
+      
+    } catch (error) {
+      console.log("Error fetching book by ID:", error);
+      return next(createHttpError(500, "Failed to fetch book"));
+      
+    }
+  },
+
+  async getAllBooks(req: Request, res: Response, next: NextFunction) {
+    try {
+
+      const {
+        page = "1",
+        limit = "10",
+        genre,
+        search = ""
+      } = req.query as GetAllBooksQuery;
+
+      const query: any = {};
+
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: "i" } }, // Case-insensitive search
+          { description: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      if (genre) {
+        query.genre = { $regex: genre, $options: "i" };
+      }
+
+      const options = {
+        page : parseInt(page, 10),
+        limit : parseInt(limit, 10),
+        populate: { path: 'author', select: 'name email' },
+        sort: { createdAt: -1 },
+      }
+
+      const result = await book.paginate(query, options);
+      res.status(200).json({
+        success : true,
+        message : "Books fetched successfully",
+        data : {
+          books  : result.docs,
+        },
+        pagination : {
+          currentPage : result.page,
+          totalPages : result.totalPages,
+          totalBooks : result.totalDocs,
+          booksPerPage : result.limit,
+          hasNextPage : result.hasNextPage,
+          hasPrevPage : result.hasPrevPage,
+          nextPage : result.nextPage,
+          prevPage : result.prevPage,
+        }
+        
+      })
+      
+      
+    } catch (error) {
+      console.log("Error fetching all books:", error);
+      return next(createHttpError(500, "Failed to fetch books"));
+      
+    }
+  }
 };
 
 export default bookController;

@@ -33,4 +33,8 @@ bookRouter.patch("/:id",
   asyncHandler(bookController.updateBook)
  )
 
+ bookRouter.get("/:id", asyncHandler(bookController.getBookById));
+
+ bookRouter.get("/", asyncHandler(bookController.getAllBooks));
+
 export default bookRouter;

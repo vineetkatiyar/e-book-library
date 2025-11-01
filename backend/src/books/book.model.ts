@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import { BookType } from "./bookType";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const bookSchema = new mongoose.Schema<BookType>({
     title : {
         type : String,
         required: true,
         trim: true,
+        index: true,
     },
     description : {
         type : String,
@@ -22,6 +24,7 @@ const bookSchema = new mongoose.Schema<BookType>({
         type : String,
         required: true,
         trim: true,
+        index: true,
     },
     coverImageUrl : {
         type : String,
@@ -37,5 +40,7 @@ const bookSchema = new mongoose.Schema<BookType>({
     timestamps: true,
 })
 
-const book = mongoose.model<BookType>("Book", bookSchema);
+bookSchema.plugin(mongoosePaginate);
+
+const book = mongoose.model<BookType, mongoose.PaginateModel<BookType>>("Book", bookSchema);
 export default book;
