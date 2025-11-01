@@ -24,4 +24,13 @@ bookRouter.post(
   asyncHandler(bookController.createBook),
 );
 
+bookRouter.patch("/:id",
+  authenticate,
+  upload.fields([
+    { name: "coverImageUrl", maxCount: 1 },
+    { name: "file", maxCount: 1 },
+  ]),
+  asyncHandler(bookController.updateBook)
+ )
+
 export default bookRouter;

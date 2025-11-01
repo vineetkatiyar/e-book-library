@@ -7,6 +7,11 @@ const bookSchema = new mongoose.Schema<BookType>({
         required: true,
         trim: true,
     },
+    description : {
+        type : String,
+        required: false,
+        trim: true,
+    },
 
     author : {
         type : mongoose.Schema.Types.ObjectId,
