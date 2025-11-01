@@ -37,4 +37,8 @@ bookRouter.patch("/:id",
 
  bookRouter.get("/", asyncHandler(bookController.getAllBooks));
 
+ bookRouter.delete("/:id",
+  authenticate,
+  asyncHandler(bookController.deleteBook)
+ )
 export default bookRouter;
