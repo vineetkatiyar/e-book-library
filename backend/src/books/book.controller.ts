@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import path, { parse } from "node:path";
+import path from "node:path";
 import cloudinary from "../config/cloudinary";
 import fs from "fs/promises";
 import createHttpError from "http-errors";
@@ -42,23 +42,26 @@ const bookController = {
       });
       await fs.unlink(coverFilePath);
 
-      // Upload Book File
-      const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
-        folder: "book-pdfs",
-        use_filename: true,
-        resource_type: "raw",
-      });
-      await fs.unlink(bookFilePath);
+// Upload Book File
+const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
+  folder: "book-pdfs",
+  use_filename: true,
+  resource_type: "raw",
+});
+await fs.unlink(bookFilePath);
 
-      // Create book in DB
-      const newBook = await book.create({
-        title,
-        description,
-        author: req.userId,
-        genre,
-        coverImageUrl: uploadedCover.secure_url,
-        file: uploadedBook.secure_url,
-      });
+// ✅ Query parameter MAT add karo - simple URL rakho
+const fileUrl = uploadedBook.secure_url;
+
+// Create book in DB
+const newBook = await book.create({
+  title,
+  description,
+  author: req.userId,
+  genre,
+  coverImageUrl: uploadedCover.secure_url,
+  file: fileUrl  // Simple URL without query params
+});
 
       res.status(201).json({
         message: "Book created successfully",
@@ -122,7 +125,8 @@ const bookController = {
         const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
           folder: "book-pdfs",
           use_filename: true,
-          resource_type: "raw",
+          resource_type: "raw", // ✅ RAW for PDF
+          access_mode: 'public',
         });
         await fs.unlink(bookFilePath);
         updatedFileUrl = uploadedBook.secure_url;
@@ -179,7 +183,7 @@ const bookController = {
 
       if (search) {
         query.$or = [
-          { title: { $regex: search, $options: "i" } }, // Case-insensitive search
+          { title: { $regex: search, $options: "i" } },
           { description: { $regex: search, $options: "i" } },
         ];
       }
@@ -218,6 +222,7 @@ const bookController = {
       return next(createHttpError(500, "Failed to fetch books"));
     }
   },
+
   async deleteBook(req: Request, res: Response, next: NextFunction) {
     try {
       const bookId = req.params.id;
@@ -227,18 +232,14 @@ const bookController = {
         return next(createHttpError(404, "Book not found"));
       }
   
-      // Authorization check
       if (existingBook.author.toString() !== req.userId) {
         return next(createHttpError(403, "Not authorized to delete this book"));
       }
   
-      // Store URLs before deletion
       const { coverImageUrl, file } = existingBook;
   
-      // Delete from database
       await book.findByIdAndDelete(bookId);
   
-      // Delete from Cloudinary (fire and forget)
       if (coverImageUrl) deleteFromCloudinary(coverImageUrl);
       if (file) deleteFromCloudinary(file);
   

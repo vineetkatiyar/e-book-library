@@ -18,7 +18,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/v1/users', userRouter);
-app.use("/api/books", bookRouter)
+app.use("/api/v1/books", bookRouter)
 
 app.use(errorHandler);
 

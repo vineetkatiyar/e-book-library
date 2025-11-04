@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Source_Serif_4 as Source_Serif_Pro } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import Navbar from "@/components/home/navbar/navbar";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -26,7 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} ${serif.variable}`}>
       <body className="font-sans antialiased">
-        {children}
+        <div className="max-w-5xl mx-auto my-0">
+          <Navbar />
+          {children}
+        </div>
         <Toaster position="top-right" />
       </body>
     </html>
