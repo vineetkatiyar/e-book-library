@@ -14,10 +14,7 @@ export default async function BookDetails({
 }) {
   try {
     const res = await fetch(
-      `${process.env.BACKEND_URL}/books/${params.bookId}`,
-      {
-        cache: "no-store",
-      }
+      `${process.env.BACKEND_URL}/books/${params.bookId}`
     );
 
     if (!res.ok) {

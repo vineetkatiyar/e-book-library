@@ -3,9 +3,7 @@ import BookCard from "./bookCard";
 
 export default async function BookList() {
   try {
-    const res = await fetch(`${process.env.BACKEND_URL}/books`, {
-      cache: "no-store",
-    });
+    const res = await fetch(`${process.env.BACKEND_URL}/books`);
     if (!res.ok) {
       throw new Error("Failed to fetch book data");
     }
