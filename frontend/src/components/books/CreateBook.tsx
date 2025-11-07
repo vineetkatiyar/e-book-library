@@ -1,0 +1,286 @@
+// src/components/books/CreateBookForm.tsx
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, X, FileText, Image } from 'lucide-react';
+
+interface CreateBookFormProps {
+  onSubmit: (formData: FormData) => void;
+  onCancel: () => void;
+}
+
+const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    bookAuthor: '',
+    genre: '',
+    description: '',
+  });
+
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [bookFile, setBookFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!coverImage || !bookFile) {
+      alert('Please select both cover image and PDF file');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Create FormData for file upload
+      const submitData = new FormData();
+      submitData.append('title', formData.title);
+      submitData.append('bookAuthor', formData.bookAuthor);
+      submitData.append('genre', formData.genre);
+      submitData.append('description', formData.description);
+      
+      submitData.append('coverImageUrl', coverImage);
+      submitData.append('file', bookFile);
+
+      await onSubmit(submitData);
+      
+      // Reset form on success
+      setFormData({
+        title: '',
+        bookAuthor: '',
+        genre: '',
+        description: '',
+      });
+      setCoverImage(null);
+      setBookFile(null);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate image file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPEG, PNG, etc.)');
+        return;
+      }
+      setCoverImage(file);
+    }
+  };
+
+  const handleBookFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate PDF file type
+      if (file.type !== 'application/pdf') {
+        alert('Please select a PDF file');
+        return;
+      }
+      setBookFile(file);
+    }
+  };
+
+  const removeCoverImage = () => {
+    setCoverImage(null);
+  };
+
+  const removeBookFile = () => {
+    setBookFile(null);
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Book Information</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+                placeholder="Enter book title"
+              />
+            </div>
+
+            {/* Author */}
+            <div className="space-y-2">
+              <Label htmlFor="bookAuthor">Author *</Label>
+              <Input
+                id="bookAuthor"
+                value={formData.bookAuthor}
+                onChange={(e) => setFormData({ ...formData, bookAuthor: e.target.value })}
+                required
+                placeholder="Enter author name"
+              />
+            </div>
+
+            {/* Genre */}
+            <div className="space-y-2">
+              <Label htmlFor="genre">Genre *</Label>
+              <Input
+                id="genre"
+                value={formData.genre}
+                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
+                required
+                placeholder="Enter genre"
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Enter book description"
+              rows={4}
+            />
+          </div>
+
+          {/* File Uploads */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="coverImage">Cover Image *</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <input
+                  id="coverImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverImageChange}
+                  className="hidden"
+                />
+                {!coverImage ? (
+                  <label htmlFor="coverImage" className="cursor-pointer block">
+                    <Image className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Upload Cover Image
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, JPEG up to 10MB
+                    </p>
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <Image className="h-8 w-8 text-green-500" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-900">
+                          {coverImage.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(coverImage.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={removeCoverImage}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Book PDF Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="bookFile">Book File (PDF) *</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <input
+                  id="bookFile"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleBookFileChange}
+                  className="hidden"
+                />
+                {!bookFile ? (
+                  <label htmlFor="bookFile" className="cursor-pointer block">
+                    <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Upload PDF File
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PDF files up to 50MB
+                    </p>
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <FileText className="h-8 w-8 text-green-500" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-900">
+                          {bookFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(bookFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={removeBookFile}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex justify-end gap-3 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={!coverImage || !bookFile || isSubmitting}
+              className="min-w-24"
+            >
+              {isSubmitting ? (
+                'Creating...'
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Create Book
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default CreateBookForm;

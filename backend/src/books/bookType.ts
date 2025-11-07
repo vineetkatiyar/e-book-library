@@ -5,6 +5,7 @@ export interface BookType extends Document {
     _id : string;
     title: string;
     description?: string;
+    bookAuthor : string;
     author : User;
     genre : string;
     coverImageUrl : string;

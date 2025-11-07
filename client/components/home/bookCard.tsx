@@ -4,16 +4,14 @@ import Link from "next/link";
 interface BookCardProps {
   _id: string;
   title: string;
-  author: {
-    name: string;
-  };
+  bookAuthor : string
   coverImageUrl: string;
 }
 
 export default function BookCard({
   _id,
   title,
-  author,
+  bookAuthor,
   coverImageUrl,
 }: BookCardProps) {
   return (
@@ -30,7 +28,7 @@ export default function BookCard({
       </div>
       <div className="p-4">
         <h3 className="text-lg font-semibold truncate">{title}</h3>
-        <p className="text-sm text-gray-600 mb-3">by {author.name}</p>
+        <p className="text-sm text-gray-600 mb-3">by {bookAuthor}</p>
         <Link
           href={`/books/${_id}`}
           className="inline-block bg-[#ff6700] text-white px-4 py-2 rounded-md hover:opacity-90 transition"

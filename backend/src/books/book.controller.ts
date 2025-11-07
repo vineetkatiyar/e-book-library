@@ -16,7 +16,7 @@ interface GetAllBooksQuery {
 const bookController = {
   async createBook(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, genre, description } = req.body;
+      const { title, genre, description, bookAuthor } = req.body;
       const files = req.files as { [key: string]: Express.Multer.File[] };
 
       if (!files?.coverImageUrl?.[0]) {
@@ -42,26 +42,27 @@ const bookController = {
       });
       await fs.unlink(coverFilePath);
 
-// Upload Book File
-const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
-  folder: "book-pdfs",
-  use_filename: true,
-  resource_type: "raw",
-});
-await fs.unlink(bookFilePath);
+      // Upload Book File
+      const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
+        folder: "book-pdfs",
+        use_filename: true,
+        resource_type: "raw",
+      });
+      await fs.unlink(bookFilePath);
 
-// ✅ Query parameter MAT add karo - simple URL rakho
-const fileUrl = uploadedBook.secure_url;
+      // ✅ Query parameter MAT add karo - simple URL rakho
+      const fileUrl = uploadedBook.secure_url;
 
-// Create book in DB
-const newBook = await book.create({
-  title,
-  description,
-  author: req.userId,
-  genre,
-  coverImageUrl: uploadedCover.secure_url,
-  file: fileUrl  // Simple URL without query params
-});
+      // Create book in DB
+      const newBook = await book.create({
+        title,
+        description,
+        bookAuthor,
+        author: req.userId,
+        genre,
+        coverImageUrl: uploadedCover.secure_url,
+        file: fileUrl, // Simple URL without query params
+      });
 
       res.status(201).json({
         message: "Book created successfully",
@@ -75,7 +76,7 @@ const newBook = await book.create({
 
   async updateBook(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, genre, description } = req.body;
+      const { title, genre, description, bookAuthor } = req.body;
       const bookId = req.params.id;
       const existingBook = await book.findById(bookId);
       if (!existingBook) {
@@ -125,8 +126,8 @@ const newBook = await book.create({
         const uploadedBook = await cloudinary.uploader.upload(bookFilePath, {
           folder: "book-pdfs",
           use_filename: true,
-          resource_type: "raw", // ✅ RAW for PDF
-          access_mode: 'public',
+          resource_type: "raw",
+          access_mode: "public",
         });
         await fs.unlink(bookFilePath);
         updatedFileUrl = uploadedBook.secure_url;
@@ -135,6 +136,7 @@ const newBook = await book.create({
       existingBook.title = title || existingBook.title;
       existingBook.genre = genre || existingBook.genre;
       existingBook.description = description || existingBook.description;
+      existingBook.bookAuthor = bookAuthor || existingBook.bookAuthor;
       existingBook.coverImageUrl = updatedCoverImageUrl;
       existingBook.file = updatedFileUrl;
 
@@ -227,26 +229,25 @@ const newBook = await book.create({
     try {
       const bookId = req.params.id;
       const existingBook = await book.findById(bookId);
-      
+
       if (!existingBook) {
         return next(createHttpError(404, "Book not found"));
       }
-  
+
       if (existingBook.author.toString() !== req.userId) {
         return next(createHttpError(403, "Not authorized to delete this book"));
       }
-  
+
       const { coverImageUrl, file } = existingBook;
-  
+
       await book.findByIdAndDelete(bookId);
-  
+
       if (coverImageUrl) deleteFromCloudinary(coverImageUrl);
       if (file) deleteFromCloudinary(file);
-  
+
       res.status(200).json({
         message: "Book deleted successfully",
       });
-      
     } catch (error) {
       console.log("Error deleting book:", error);
       return next(createHttpError(500, "Failed to delete book"));

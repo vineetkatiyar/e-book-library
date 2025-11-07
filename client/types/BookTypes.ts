@@ -3,6 +3,7 @@ export interface Book {
     title: string;
     description: string;
     author: Author;
+    bookAuthor : string
     genre: string;
     coverImageUrl: string;
     file: string;
