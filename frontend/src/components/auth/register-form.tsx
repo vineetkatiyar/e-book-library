@@ -8,6 +8,9 @@ import {
   type RegisterFormData,
 } from "@/lib/validator/authSchema";
 import { Link } from "react-router-dom";
+import { Spinner } from "@/components/ui/spinner";
+import { useRegister } from "@/hooks/useRegister";
+import { toast } from "sonner";
 
 // import { useAuthStore } from '@/store/auth-store';
 
@@ -21,9 +24,20 @@ export default function RegisterForm() {
     resolver: zodResolver(registerSchema),
   });
 
+  const { mutate: doRegister, isPending } = useRegister();
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       console.log("Registration successful:", data);
+
+      doRegister(data, {
+        onError: (error) => {
+          toast.error(error?.message || "Something went wrong");
+          setError("root", {
+            message: error.message || "Registration failed",
+          });
+        },
+      });
     } catch (error: any) {
       setError("root", {
         message: error.response?.data?.message || "Registration failed",
@@ -117,14 +131,17 @@ export default function RegisterForm() {
           type="submit"
           className="w-full bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
         >
-          Create Account
+          {isPending ? <Spinner /> : "Create Account"}
         </Button>
       </form>
 
       <div className="text-center text-sm">
         <p className="text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <Link to="/auth/login" className="text-black underline dark:text-white">
+          <Link
+            to="/auth/login"
+            className="text-black underline dark:text-white"
+          >
             Sign in
           </Link>
         </p>

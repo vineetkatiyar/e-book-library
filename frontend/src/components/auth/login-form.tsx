@@ -7,6 +7,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validator/authSchema";
 import { Link } from "react-router-dom";
 import { useLogin } from "@/hooks/useLogin";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginForm() {
   const {
@@ -20,24 +21,15 @@ export default function LoginForm() {
 
   const { mutate: doLogin, isPending } = useLogin();
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      console.log("Login form data:", data);
-
-      doLogin(data, {
-        onError: (error) => {
-          toast.error(error?.message || "Something went wrong");
-          setError("root", {
-            message: error.message || "Invalid email or password",
-          });
-        },
-      });
-      console.log("Login successful");
-    } catch (error: any) {
-      setError("root", {
-        message: error.message || "Invalid email or password",
-      });
-    }
+  const onSubmit = (data: LoginFormData) => {
+    doLogin(data, {
+      onError: (error) => {
+        toast.error(error?.message || "Something went wrong");
+        setError("root", {
+          message: error.message || "Invalid email or password",
+        });
+      },
+    });
   };
 
   return (
@@ -94,7 +86,7 @@ export default function LoginForm() {
           type="submit"
           className="w-full bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
         >
-          {isPending ? "Signing in..." : "Sign In"}
+          {isPending ? <Spinner /> : "Sign In"}
         </Button>
       </form>
 

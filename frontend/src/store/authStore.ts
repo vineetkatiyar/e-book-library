@@ -1,44 +1,36 @@
-import {create} from "zustand";
-import {persist} from "zustand/middleware";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-type User =  {
-    _id: string;
-    name: string;
-    email: string;
-}
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
 
-type authState = {
-    user : User | null;
-    token : string | null;
-    loading : boolean;
+type AuthState = {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  setUser: (user: User) => void;
+  setToken: (token: string) => void;
+  setLoading: (loading: boolean) => void;
+  logout: () => void;
+};
 
-    //actions 
-
-    setUser : (user : User) => void;
-    setToken : (token : string) => void;
-    setLoading : (loading : boolean) => void;
-    logout : () => void;
-}
-
-export const useAuthStore = create<authState>()(
-    persist(
-        (set) => ({
-            //initial state
-            user : null,
-            token : null,
-            loading : false,
-
-            //setter
-            setUser : (user : User) => set({user}),
-            setToken : (token : string) => set({token}),
-            setLoading : (loading : boolean) => set({loading}),
-
-            //logout
-            logout : () => set({user : null, token : null})
-        }),
-        {
-            name : "auth-storage",
-            partialize: (state) => ({ token: state.token }),
-        }
-    )
-)
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      loading: false,
+      setUser: (user) => set({ user }),
+      setToken: (token) => set({ token }),
+      setLoading: (loading) => set({ loading }),
+      logout: () => set({ user: null, token: null }),
+    }),
+    {
+      name: "auth-storage",
+      partialize: (state) => ({ token: state.token, user: state.user }),
+    }
+  )
+);
