@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginSchema, type LoginFormData } from "@/lib/validator/authSchema";
 import { Link } from "react-router-dom";
+import { useLogin } from "@/hooks/useLogin";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const {
@@ -16,9 +18,21 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
+  const { mutate: doLogin, isPending } = useLogin();
+
   const onSubmit = async (data: LoginFormData) => {
     try {
-      console.log("Logging in with data:", data);
+      console.log("Login form data:", data);
+
+      doLogin(data, {
+        onError: (error) => {
+          toast.error(error?.message || "Something went wrong");
+          setError("root", {
+            message: error.message || "Invalid email or password",
+          });
+        },
+      });
+      console.log("Login successful");
     } catch (error: any) {
       setError("root", {
         message: error.message || "Invalid email or password",
@@ -80,14 +94,17 @@ export default function LoginForm() {
           type="submit"
           className="w-full bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
         >
-          Sign In
+          {isPending ? "Signing in..." : "Sign In"}
         </Button>
       </form>
 
       <div className="text-center text-sm">
         <p className="text-gray-600 dark:text-gray-400">
           Don't have an account?{" "}
-          <Link to="/auth/register" className="text-black underline dark:text-white">
+          <Link
+            to="/auth/register"
+            className="text-black underline dark:text-white"
+          >
             Sign up
           </Link>
         </p>
