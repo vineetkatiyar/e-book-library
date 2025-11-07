@@ -6,16 +6,9 @@ import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/registerPage";
 import { createBrowserRouter } from "react-router-dom";
 import UpdateBookPage from "@/pages/updateBookPage";
+import AuthLayout from "@/components/layout/authLayout";
 
 export const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/register",
-    element: <RegisterPage />,
-  },
   {
     path: "/",
     element: <Layout />,
@@ -25,16 +18,30 @@ export const router = createBrowserRouter([
         element: <BooksPage />,
       },
       {
-        path: "books/create", 
+        path: "books/create",
         element: <CreateBookPage />,
       },
       {
-        path: "books/edit/:id", 
+        path: "books/edit/:id",
         element: <UpdateBookPage />,
       },
       {
         path: "profile",
         element: <ProfilePage />,
+      },
+    ],
+  },
+  {
+    path: "/auth",
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        path: "register",
+        element: <RegisterPage />,
       },
     ],
   },

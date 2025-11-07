@@ -27,7 +27,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="mx-auto max-w-sm space-y-6 story-text">
+    <div className="mx-auto max-w-sm space-y-6 book-text">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Welcome Back</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -87,7 +87,7 @@ export default function LoginForm() {
       <div className="text-center text-sm">
         <p className="text-gray-600 dark:text-gray-400">
           Don't have an account?{" "}
-          <Link to="/register" className="text-black underline dark:text-white">
+          <Link to="/auth/register" className="text-black underline dark:text-white">
             Sign up
           </Link>
         </p>

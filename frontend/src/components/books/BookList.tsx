@@ -81,12 +81,12 @@ const BookList = () => {
   };
 
   return (
-    <div className="w-full max-w-full">
+    <div className="w-full max-w-full book-text">
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between w-full">
           <div>
             <CardTitle>All Books</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm book-text mt-1">
               Total {books.length} books in your library
             </p>
           </div>
@@ -100,7 +100,7 @@ const BookList = () => {
             <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[120px]">Cover Image</TableHead>
+                  <TableHead className="min-w-[120px] book-text">Cover Image</TableHead>
                   <TableHead className="min-w-[200px]">Title</TableHead>
                   <TableHead className="min-w-[150px]">Author</TableHead>
                   <TableHead className="min-w-[120px]">Genre</TableHead>
