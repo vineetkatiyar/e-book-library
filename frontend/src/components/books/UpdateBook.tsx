@@ -1,12 +1,12 @@
 // src/components/books/UpdateBookForm.tsx
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {  X, FileText, Image, Save } from 'lucide-react';
-import type { Book } from './BookList';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { X, FileText, Image, Save } from "lucide-react";
+import type { Book } from "@/axios/bookApi";
 
 interface UpdateBookFormProps {
   book: Book;
@@ -16,10 +16,10 @@ interface UpdateBookFormProps {
 
 const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
   const [formData, setFormData] = useState({
-    title: '',
-    bookAuthor: '',
-    genre: '',
-    description: '',
+    title: "",
+    bookAuthor: "",
+    genre: "",
+    description: "",
   });
 
   const [coverImage, setCoverImage] = useState<File | null>(null);
@@ -33,36 +33,35 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
       title: book.title,
       bookAuthor: book.bookAuthor,
       genre: book.genre,
-      description: book.description || '',
+      description: book.description || "",
     });
     setCurrentCoverUrl(book.coverImageUrl);
   }, [book]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Create FormData for file upload
       const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('bookAuthor', formData.bookAuthor);
-      submitData.append('genre', formData.genre);
-      submitData.append('description', formData.description);
-      
-      // Only append files if they were changed
+      submitData.append("title", formData.title);
+      submitData.append("bookAuthor", formData.bookAuthor);
+      submitData.append("genre", formData.genre);
+      submitData.append("description", formData.description);
+
       if (coverImage) {
-        submitData.append('coverImageUrl', coverImage);
+        submitData.append("coverImageUrl", coverImage);
       }
-      
+
       if (bookFile) {
-        submitData.append('file', bookFile);
+        submitData.append("file", bookFile);
       }
 
       await onSubmit(submitData);
     } catch (error) {
-      console.error('Error updating book:', error);
+      console.error("Error updating book:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,12 +71,12 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate image file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file (JPEG, PNG, etc.)');
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file (JPEG, PNG, etc.)");
         return;
       }
       setCoverImage(file);
-      
+
       // Create preview URL for new image
       const previewUrl = URL.createObjectURL(file);
       setCurrentCoverUrl(previewUrl);
@@ -88,8 +87,8 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate PDF file type
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file');
+      if (file.type !== "application/pdf") {
+        alert("Please select a PDF file");
         return;
       }
       setBookFile(file);
@@ -110,7 +109,7 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
       formData.title !== book.title ||
       formData.bookAuthor !== book.bookAuthor ||
       formData.genre !== book.genre ||
-      formData.description !== (book.description || '') ||
+      formData.description !== (book.description || "") ||
       coverImage !== null ||
       bookFile !== null
     );
@@ -131,7 +130,9 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 required
                 placeholder="Enter book title"
               />
@@ -143,7 +144,9 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
               <Input
                 id="bookAuthor"
                 value={formData.bookAuthor}
-                onChange={(e) => setFormData({ ...formData, bookAuthor: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, bookAuthor: e.target.value })
+                }
                 required
                 placeholder="Enter author name"
               />
@@ -155,7 +158,9 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
               <Input
                 id="genre"
                 value={formData.genre}
-                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, genre: e.target.value })
+                }
                 required
                 placeholder="Enter genre"
               />
@@ -168,7 +173,9 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Enter book description"
               rows={4}
             />
@@ -184,14 +191,14 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
                 {currentCoverUrl && (
                   <div className="text-center">
                     <p className="text-sm text-gray-600 mb-2">Current Cover:</p>
-                    <img 
-                      src={currentCoverUrl} 
-                      alt="Current cover" 
+                    <img
+                      src={currentCoverUrl}
+                      alt="Current cover"
                       className="mx-auto h-32 object-cover rounded-lg border"
                     />
                   </div>
                 )}
-                
+
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                   <input
                     id="coverImage"
@@ -201,7 +208,10 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
                     className="hidden"
                   />
                   {!coverImage ? (
-                    <label htmlFor="coverImage" className="cursor-pointer block">
+                    <label
+                      htmlFor="coverImage"
+                      className="cursor-pointer block"
+                    >
                       <Image className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-sm font-medium text-gray-700">
                         Change Cover Image
@@ -297,13 +307,13 @@ const UpdateBookForm = ({ book, onSubmit, onCancel }: UpdateBookFormProps) => {
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={!hasChanges() || isSubmitting}
               className="min-w-24"
             >
               {isSubmitting ? (
-                'Updating...'
+                "Updating..."
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />

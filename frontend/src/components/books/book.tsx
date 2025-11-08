@@ -19,7 +19,8 @@ const ViewBookModal = ({ book, open, onOpenChange }: ViewBookModalProps) => {
   if (!book) return null;
 
   const handleOpenDrive = () => {
-    window.open(book.file, "_blank"); // ✅ open Google Drive or PDF
+    const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(book.file)}&embedded=true`;
+    window.open(googleViewerUrl, "_blank");
   };
 
   return (

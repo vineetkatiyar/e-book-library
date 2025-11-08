@@ -1,98 +1,81 @@
-// src/components/books/CreateBookForm.tsx
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, FileText, Image } from 'lucide-react';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { bookSchema, type BookFormData } from "@/lib/validator/bookSchema";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload, X, FileText, Image } from "lucide-react";
 
 interface CreateBookFormProps {
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (formData: FormData) => void | Promise<void>;
   onCancel: () => void;
 }
 
 const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    bookAuthor: '',
-    genre: '',
-    description: '',
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<BookFormData>({
+    resolver: zodResolver(bookSchema),
+    defaultValues: {
+      title: "",
+      bookAuthor: "",
+      genre: "",
+      description: "",
+    },
   });
 
-  const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [bookFile, setBookFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!coverImage || !bookFile) {
-      alert('Please select both cover image and PDF file');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Create FormData for file upload
-      const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('bookAuthor', formData.bookAuthor);
-      submitData.append('genre', formData.genre);
-      submitData.append('description', formData.description);
-      
-      submitData.append('coverImageUrl', coverImage);
-      submitData.append('file', bookFile);
-
-      await onSubmit(submitData);
-      
-      // Reset form on success
-      setFormData({
-        title: '',
-        bookAuthor: '',
-        genre: '',
-        description: '',
-      });
-      setCoverImage(null);
-      setBookFile(null);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const coverImage = watch("coverImageUrl");
+  const bookFile = watch("file");
 
   const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate image file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file (JPEG, PNG, etc.)');
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file (JPEG, PNG, etc.)");
         return;
       }
-      setCoverImage(file);
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image must be < 10MB");
+        return;
+      }
+      setValue("coverImageUrl", file);
     }
   };
 
   const handleBookFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate PDF file type
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file');
+      if (file.type !== "application/pdf") {
+        alert("Please select a PDF file");
         return;
       }
-      setBookFile(file);
+      if (file.size > 50 * 1024 * 1024) {
+        alert("PDF must be < 50MB");
+        return;
+      }
+      setValue("file", file);
     }
   };
 
-  const removeCoverImage = () => {
-    setCoverImage(null);
-  };
+  const removeCoverImage = () => setValue("coverImageUrl", undefined as any);
+  const removeBookFile = () => setValue("file", undefined as any);
 
-  const removeBookFile = () => {
-    setBookFile(null);
+  const onValidSubmit = async (data: BookFormData) => {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("bookAuthor", data.bookAuthor);
+    formData.append("genre", data.genre);
+    formData.append("description", data.description || "");
+    formData.append("coverImageUrl", data.coverImageUrl);
+    formData.append("file", data.file);
+
+    await onSubmit(formData);
   };
 
   return (
@@ -101,43 +84,44 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
         <CardTitle>Book Information</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
+        <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
+                {...register("title")}
                 placeholder="Enter book title"
               />
+              {errors.title && (
+                <p className="text-sm text-red-500">{errors.title.message}</p>
+              )}
             </div>
 
-            {/* Author */}
             <div className="space-y-2">
               <Label htmlFor="bookAuthor">Author *</Label>
               <Input
                 id="bookAuthor"
-                value={formData.bookAuthor}
-                onChange={(e) => setFormData({ ...formData, bookAuthor: e.target.value })}
-                required
+                {...register("bookAuthor")}
                 placeholder="Enter author name"
               />
+              {errors.bookAuthor && (
+                <p className="text-sm text-red-500">
+                  {errors.bookAuthor.message}
+                </p>
+              )}
             </div>
 
-            {/* Genre */}
             <div className="space-y-2">
               <Label htmlFor="genre">Genre *</Label>
               <Input
                 id="genre"
-                value={formData.genre}
-                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-                required
+                {...register("genre")}
                 placeholder="Enter genre"
               />
+              {errors.genre && (
+                <p className="text-sm text-red-500">{errors.genre.message}</p>
+              )}
             </div>
           </div>
 
@@ -146,22 +130,21 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Enter book description"
+              {...register("description")}
               rows={4}
+              placeholder="Enter book description"
             />
           </div>
 
-          {/* File Uploads */}
+          {/* Files */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cover Image Upload */}
+            {/* Cover Image */}
             <div className="space-y-2">
               <Label htmlFor="coverImage">Cover Image *</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                 <input
-                  id="coverImage"
                   type="file"
+                  id="coverImage"
                   accept="image/*"
                   onChange={handleCoverImageChange}
                   className="hidden"
@@ -173,7 +156,7 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
                       Upload Cover Image
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, JPEG up to 10MB
+                      PNG, JPG up to 10MB
                     </p>
                   </label>
                 ) : (
@@ -201,15 +184,20 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
                   </div>
                 )}
               </div>
+              {errors.coverImageUrl && (
+                <p className="text-sm text-red-500">
+                  {errors.coverImageUrl.message}
+                </p>
+              )}
             </div>
 
-            {/* Book PDF Upload */}
+            {/* PDF Upload */}
             <div className="space-y-2">
               <Label htmlFor="bookFile">Book File (PDF) *</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                 <input
-                  id="bookFile"
                   type="file"
+                  id="bookFile"
                   accept=".pdf"
                   onChange={handleBookFileChange}
                   className="hidden"
@@ -249,10 +237,13 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
                   </div>
                 )}
               </div>
+              {errors.file && (
+                <p className="text-sm text-red-500">{errors.file.message}</p>
+              )}
             </div>
           </div>
 
-          {/* Form Actions */}
+          {/* Actions */}
           <div className="flex justify-end gap-3 pt-6 border-t">
             <Button
               type="button"
@@ -262,17 +253,12 @@ const CreateBookForm = ({ onSubmit, onCancel }: CreateBookFormProps) => {
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={!coverImage || !bookFile || isSubmitting}
-              className="min-w-24"
-            >
+            <Button type="submit" disabled={isSubmitting} className="min-w-24">
               {isSubmitting ? (
-                'Creating...'
+                "Creating..."
               ) : (
                 <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Create Book
+                  <Upload className="h-4 w-4 mr-2" /> Create Book
                 </>
               )}
             </Button>

@@ -42,6 +42,12 @@ export const getBook = async (id: string): Promise<Book> => {
 };
 
 export const deleteBook = async (id: string): Promise<void> => {
-  await axiosApi.delete(`/books/${id}`);
+ const res = await axiosApi.delete(`/books/${id}`);
+  return res.data;
+};
+
+export const createBook = async (data: FormData): Promise<Book> => {
+  const res = await axiosApi.post<Book>("/books", data);
+  return res.data;
 };
 
