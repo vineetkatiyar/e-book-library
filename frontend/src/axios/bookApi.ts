@@ -31,6 +31,11 @@ export interface GetBooksResponse {
   };
 }
 
+export interface GetBookByIdResponse {
+  message: string;
+  book: Book
+}
+
 export const getBooks = async (): Promise<Book[]> => {
   const res = await axiosApi.get<GetBooksResponse>("/books");
   return res.data.data.books;
@@ -49,5 +54,15 @@ export const deleteBook = async (id: string): Promise<void> => {
 export const createBook = async (data: FormData): Promise<Book> => {
   const res = await axiosApi.post<Book>("/books", data);
   return res.data;
+};
+
+export const updateBook = async (id: string, data: FormData): Promise<Book> => {
+  const res = await axiosApi.put<Book>(`/books/${id}`, data);
+  return res.data;
+};
+
+export const getBookById = async (id: string): Promise<Book> => {
+  const res = await axiosApi.get<GetBookByIdResponse>(`/books/${id}`);
+  return res.data.book
 };
 
