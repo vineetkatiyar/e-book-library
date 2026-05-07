@@ -42,7 +42,7 @@ export default async function BookDetails({
         {/* LEFT SIDE */}
         <div>
           <h1 className="md:text-3xl text-xl font-bold mb-2">{book.title}</h1>
-          <p className="text-gray-600 mb-4">by {book.author.name}</p>
+          <p className="mb-4 text-[#ff6700] text-lg font-semibold">by {book.bookAuthor}</p>
           <p className="text-gray-800 leading-relaxed mb-6">
             {book.description}
           </p>
